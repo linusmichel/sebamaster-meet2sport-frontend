@@ -36,7 +36,8 @@ export default class EventCard extends React.Component {
                     </ListGroupItem>
             </ListGroup>
             <Panel.Footer>
-                <Button bsStyle={'primary'} onClick = {() => {this.props.joinEvent(event)}}>Join</Button>
+                {this.props.joinEvent && <Button bsStyle={'primary'} onClick = {() => {this.props.joinEvent(event)}}>Join</Button>}
+                {this.props.leaveEvent && <Button bsStyle={'danger'} onClick = {() => {this.props.leaveEvent(event)}}>Leave</Button>}
                 {' '}
                 <Button onClick = {()=>{this.props.showEventDetails(this.props.event);}}>Details</Button>
                 <h3 style={{float : 'right'}}><Label bsStyle={event.participants.length < event.maxParticipants ? "success" : "danger"}>

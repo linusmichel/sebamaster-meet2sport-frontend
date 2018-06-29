@@ -40,6 +40,7 @@ export default class EventDetailsModal extends React.Component {
                     <ListGroup>
                         <ListGroupItem>
                             {'Location: ' + event.sportPlace.name}
+                            <p><a target={"_blank"} href={"https://www.google.de/maps/dir//"+event.sportPlace.loc.coordinates[1]+","+event.sportPlace.loc.coordinates[0]}>How to get there?</a></p>
                         </ListGroupItem>
                         <ListGroupItem bsStyle={new Date(event.end)<new Date() ? "danger" : undefined}>
                             {'Time: '}
@@ -60,10 +61,8 @@ export default class EventDetailsModal extends React.Component {
                     </ListGroup>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle={'primary'} onClick={() => {
-                        this.props.handleClose();
-                        this.props.joinEvent(event);
-                    }}>Join</Button>
+                    {this.props.joinEvent && <Button bsStyle={'primary'} onClick = {() => {this.props.handleClose(); this.props.joinEvent(event);}}>Join</Button>}
+                    {this.props.leaveEvent && <Button bsStyle={'danger'} onClick = {() => {this.props.handleClose(); this.props.leaveEvent(event)}}>Leave</Button>}
                     {' '}
                     <Button onClick={() => {
                         this.props.handleClose();

@@ -107,7 +107,7 @@ export class JoinEventView extends React.Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col xs={12} sm={12}><EventCardStack events = {this.state.events} showEventDetails = {this.showEventDetails} joinEvent={this.joinEvent}/></Col>
+                        <Col xs={12} sm={12}><EventCardStack title = {"Events"} events = {this.state.events} showEventDetails = {this.showEventDetails} joinEvent={this.joinEvent}/></Col>
                     </Row>
                 </Grid>
             </Page>
