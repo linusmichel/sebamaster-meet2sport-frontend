@@ -3,8 +3,6 @@
 import React from 'react';
 
 import {PageHeader, Grid, Row, Col, Button} from 'react-bootstrap';
-import EventFilter from '../components/EventFilter';
-import EventMap from '../components/EventMap';
 import Page from '../components/Page';
 
 import EventService from '../services/EventService';
