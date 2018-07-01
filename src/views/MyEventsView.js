@@ -4,7 +4,7 @@ import React from 'react';
 
 import {PageHeader,Grid, Row, Col,Panel, Glyphicon, Button, FormControl, ControlLabel, FormGroup} from 'react-bootstrap';
 import Page from '../components/Page';
-import DateTimeField from "../../sebamaster-meet2sport-frontend/src/components/DateTimeField";
+import DateTimeField from "../components/DateTimeField";
 import EventCardStack from "../components/EventCardsStack";
 
 
