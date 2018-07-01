@@ -1,6 +1,7 @@
 "use strict";
 
 import React from 'react';
+import {geolocated} from 'react-geolocated';
 
 import {
     Button,
@@ -15,26 +16,30 @@ import ActivityService from '../services/ActivityService'
 import 'react-day-picker/lib/style.css';
 import {LocationSearchField} from "./LocationSearchField";
 import DateTimeField from "./DateTimeField";
-
-const defaultFilter = {
-        activity : 'All',
-        location : {lng : 11.587, lat : 48.145},
-        locName : "München, DE",
-        radius : 3,
-        start_date: new Date(),
-        start_time: undefined,
-        end_date: undefined,
-        end_time: undefined
-    };
+import Geocode from "react-geocode";
 
 class EventFilter extends React.Component {
 
     constructor(props) {
         super(props);
+
+        const defaultFilter = {
+            activity : 'All',
+            location : {lng : 11.576006, lat : 48.137079},
+            locName : "München, DE",
+            radius : 3,
+            start_date: new Date(),
+            start_time: undefined,
+            end_date: undefined,
+            end_time: undefined
+        };
         this.state = {
             filter : defaultFilter,
-            activities : undefined
+            activities : undefined,
+            initialLocFetch : false
         };
+
+        Geocode.setApiKey("AIzaSyC022vcczx-Uvw4FXrky0qbXtApe1Vi3GU");
 
         this.handleActivityChange = this.handleActivityChange.bind(this);
         this.handleLocationChange = this.handleLocationChange.bind(this);
@@ -65,7 +70,32 @@ class EventFilter extends React.Component {
             });
         });
 
+        // Set location + radius for map
         this.props.locationCallback(this.state.filter.location, this.state.filter.radius);
+    }
+
+    // If Geolocation is activated, reload
+    componentWillReceiveProps(nextProps) {
+        if (!this.state.initialLocFetch && nextProps.isGeolocationAvailable && nextProps.isGeolocationEnabled){
+            if(nextProps.coords && nextProps.coords.latitude && nextProps.coords.longitude){
+                let that = this;
+                this.setState({initialLocFetch : true});
+                // Get address from latidude & longitude.
+                Geocode.fromLatLng(nextProps.coords.latitude, nextProps.coords.longitude).then(
+                    response => {
+                        let filter = that.state.filter;
+                        filter.location = { lat : nextProps.coords.latitude, lng : nextProps.coords.longitude};
+                        filter.locName = response.results[0].formatted_address;
+                        that.setState({filter : filter});
+                        that.handleFilterSubmit();
+                        that.props.locationCallback(that.state.filter.location, that.state.filter.radius);
+                    },
+                    error => {
+                        console.error(error);
+                    }
+                );
+            }
+        }
     }
 
     handleActivityChange(e){
@@ -110,42 +140,69 @@ class EventFilter extends React.Component {
         this.setState({filter : filter});
     }
     resetFilter(){
+        const defaultFilter = {
+            activity : 'All',
+            location : {lng : 11.576006, lat : 48.137079},
+            locName : "München, DE",
+            radius : 3,
+            start_date: new Date(),
+            start_time: undefined,
+            end_date: undefined,
+            end_time: undefined
+        };
         this.setState({
             filter : defaultFilter
         });
         this.handleFilterSubmit();
     }
 
-    // build consumable filter object
+    // build consumable filter object for backend request
     handleFilterSubmit(){
         let filter = {};
+        // Specify start time
         if(this.state.filter.start_date) {
             filter.start = this.state.filter.start_date;
-            filter.start.setHours(0, 0, 0);
+            // Check and validate optional hour:minute field, overwrite current start time only on valid input
             if (this.state.filter.start_time) {
                 let split = this.state.filter.start_time.split(':');
                 if (split.length == 2) {
-                    filter.start.setHours(split[0], split[1], 0);
+                    let hour = parseInt(split[0]);
+                    let min = parseInt(split[1]);
+                    if(hour !== undefined && hour !== "" && !isNaN(hour) && min !== undefined && min !== "" && !isNaN(min) && hour >= 0 && hour < 24 && min <= 59 && min >= 0){
+                        filter.start.setHours(hour, min, 0);
+                    }
                 }
+            } else {
+                filter.start.setHours(0, 0, 0);
             }
         }
+        // Specify end time
         if(this.state.filter.end_date) {
             filter.end = this.state.filter.end_date;
-            filter.end.setHours(23, 59, 59);
+            // Check and validate optional hour:minute, overwrite current end time only on valid input
             if (this.state.filter.end_time) {
                 let split = this.state.filter.end_time.split(':');
                 if (split.length == 2) {
-                    filter.end.setHours(split[0], split[1], 59);
+                    let hour = parseInt(split[0]);
+                    let min = parseInt(split[1]);
+                    if(hour !== undefined && hour !== "" && !isNaN(hour) && min !== undefined && min !== "" && !isNaN(min) && hour >= 0 && hour < 24 && min <= 59 && min >= 0){
+                        filter.end.setHours(hour, min, 59);
+                    }
                 }
+            } else {
+                filter.end.setHours(23, 59, 59);
             }
         }
+        // Specify selected activity
         if(this.state.filter.activity !== "All"){
             filter.activity = this.state.filter.activity;
         }
+        // Specify location filter string
         if(this.state.filter.location && this.state.filter.radius){
             filter.location = this.state.filter.location.lng + "," + this.state.filter.location.lat + "," + this.state.filter.radius;
         }
 
+        // Update map location and submit filter
         this.props.locationCallback(this.state.filter.location, this.state.filter.radius);
         this.props.onFilterSubmit(filter);
     }
@@ -191,7 +248,7 @@ class EventFilter extends React.Component {
                                     <FormControl placeholder="Radius"
                                                  componentClass="select"
                                                  onChange = {this.handleRadiusChange}
-                                                    defaultValue = {this.state.filter.radius}>
+                                                    value = {this.state.filter.radius}>
                                         <option value={1} key={"1km"}>1km</option>
                                         <option value={3} key={"3km"}>3km</option>
                                         <option value={5} key={"5km"}>5km</option>
@@ -214,4 +271,4 @@ class EventFilter extends React.Component {
     }
 };
 
-export default EventFilter;
+export default geolocated()(EventFilter);

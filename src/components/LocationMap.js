@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Button, Glyphicon, ListGroup, ListGroupItem } from "react-bootstrap";
+import Geocode from "react-geocode";
 
 const {
     withScriptjs,
@@ -8,7 +8,6 @@ const {
     GoogleMap,
     Marker,
 } = require("react-google-maps");
-const { SearchBox } = require("react-google-maps/lib/components/places/SearchBox");
 
 const _ = require("lodash");
 const { compose, withProps, lifecycle } = require("recompose");
@@ -18,18 +17,29 @@ export default class LocationMap extends React.PureComponent {
 
     constructor(props) {
         super(props);
-        this.onFirstPlaceChanged = this.onFirstPlaceChanged.bind(this);
+
+        Geocode.setApiKey("AIzaSyC022vcczx-Uvw4FXrky0qbXtApe1Vi3GU");
+        Geocode.enableDebug();
+        this.onRightClick = this.onRightClick.bind(this);
     }
 
-    onFirstPlaceChanged(place) {
-        if (place) {
-            const sportLocation = {
-                name: place.formatted_address.includes(place.name) ? place.formatted_address: place.name + ' (' + place.formatted_address + ')',
-                latitude: place.geometry.location.lat(),
-                longitude: place.geometry.location.lng()
-            }
-            this.props.onLocationSet(sportLocation);
+    shouldComponentUpdate(nextProps, nextState){
+        if(_.isEqual(this.props.marker, nextProps.marker)){
+            return false;
         }
+        return true;
+    }
+
+    onRightClick(loc){
+        Geocode.fromLatLng(loc.lat, loc.lng).then(
+            response => {
+                const address = response.results[0].formatted_address;
+                this.props.onLocationSet(address,loc);
+            },
+            error => {
+                console.error(error);
+            }
+        );
     }
 
     render() {
@@ -42,49 +52,19 @@ export default class LocationMap extends React.PureComponent {
             }),
             lifecycle({
                 componentWillMount() {
-                    const refs = {}
+                    const refs = {};
 
                     this.setState({
-                        bounds: null,
                         center: {
                             lat: 48.137154, lng: 11.576124
                         },
-                        markers: [],
+                        marker : this.props.marker,
                         onMapMounted: ref => {
                             refs.map = ref;
                         },
-                        onBoundsChanged: () => {
-                            this.setState({
-                                bounds: refs.map.getBounds(),
-                                center: refs.map.getCenter(),
-                            })
-                        },
-                        onSearchBoxMounted: ref => {
-                            refs.searchBox = ref;
-                        },
-                        onPlacesChanged: () => {
-                            const places = refs.searchBox.getPlaces();
-                            const bounds = new google.maps.LatLngBounds();
-
-                            places.forEach(place => {
-                                if (place.geometry.viewport) {
-                                    bounds.union(place.geometry.viewport)
-                                } else {
-                                    bounds.extend(place.geometry.location)
-                                }
-                            });
-                            const nextMarkers = places.map(place => ({
-                                position: place.geometry.location,
-                            }));
-                            const nextCenter = _.get(nextMarkers, '0.position', this.state.center);
-
-                            this.setState({
-                                center: nextCenter,
-                                //only the first marker
-                                markers: [nextMarkers[0]],
-                            });
-                            return places[0];
-                        },
+                        onRightClick: target => {
+                            this.props.rightClickCallback({lat : target.latLng.lat(), lng : target.latLng.lng()});
+                        }
                     })
                 },
             }),
@@ -94,39 +74,13 @@ export default class LocationMap extends React.PureComponent {
             <GoogleMap
                 ref={props.onMapMounted}
                 defaultZoom={13}
-                center={props.center}
-                onBoundsChanged={props.onBoundsChanged}
+                defaultCenter={props.marker ? props.marker.position : props.center}
+                onRightClick={props.onRightClick}
             >
-                <SearchBox
-                    ref={props.onSearchBoxMounted}
-                    bounds={props.bounds}
-                    controlPosition={google.maps.ControlPosition.TOP_LEFT}
-                    onPlacesChanged={e => this.onFirstPlaceChanged(props.onPlacesChanged())}
-                >
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        style={{
-                            boxSizing: `border-box`,
-                            border: `1px solid transparent`,
-                            width: `240px`,
-                            height: `32px`,
-                            marginTop: `27px`,
-                            padding: `0 12px`,
-                            borderRadius: `3px`,
-                            boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
-                            fontSize: `14px`,
-                            outline: `none`,
-                            textOverflow: `ellipses`,
-                        }}
-                    />
-                </SearchBox>
-                {props.markers.map((marker, index) =>
-                    <Marker key={index} position={marker.position} />
-                )}
+                {props.marker ? <Marker position={props.marker.position} /> : undefined }
             </GoogleMap>
         );
 
-        return <MapWithASearchBox />;
+        return <MapWithASearchBox marker = {this.props.marker} rightClickCallback = {this.onRightClick} />;
     }
 }

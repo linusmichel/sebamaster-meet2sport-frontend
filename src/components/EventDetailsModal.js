@@ -1,7 +1,6 @@
-import {Button, Col, Glyphicon, Grid, Label, ListGroup, ListGroupItem, Modal, Panel, Row} from 'react-bootstrap';
+import {Button, Glyphicon, Label, ListGroup, ListGroupItem, Modal} from 'react-bootstrap';
 import React from "react";
 import Moment from "react-moment";
-import EventService from "../services/EventService";
 import UserService from "../services/UserService";
 
 export default class EventDetailsModal extends React.Component {
@@ -41,6 +40,7 @@ export default class EventDetailsModal extends React.Component {
                     <ListGroup>
                         <ListGroupItem>
                             {'Location: ' + event.sportPlace.name}
+                            <p><a target={"_blank"} href={"https://www.google.de/maps/dir//"+event.sportPlace.loc.coordinates[1]+","+event.sportPlace.loc.coordinates[0]}>How to get there?</a></p>
                         </ListGroupItem>
                         <ListGroupItem bsStyle={new Date(event.end)<new Date() ? "danger" : undefined}>
                             {'Time: '}

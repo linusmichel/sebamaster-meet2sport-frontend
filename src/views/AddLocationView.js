@@ -9,6 +9,7 @@ import LocationMap from '../components/LocationMap';
 import ActivityService from '../services/ActivityService';
 import SportPlaceService from '../services/SportPlaceService';
 import InfoModal from '../components/InfoModal';
+import {LocationSearchField} from "../components/LocationSearchField";
 
 
 export class AddLocationView extends React.Component {
@@ -43,6 +44,7 @@ export class AddLocationView extends React.Component {
         this.onLocationSet = this.onLocationSet.bind(this);
         this.isEverythingFilled = this.isEverythingFilled.bind(this);
         this.setModal = this.setModal.bind(this);
+        this.resetForm = this.resetForm.bind(this);
     }
 
     componentWillMount() {
@@ -90,6 +92,7 @@ export class AddLocationView extends React.Component {
         const sportPlace = this.state.form;
         SportPlaceService.createSportPlace(sportPlace).then((data) => {
             this.setModal(true, <div><h4>Successfully added location!</h4><p>{sportPlace.name}</p></div>, "success");
+            this.resetForm();
         }).catch((e) => {
             console.log(e);
             this.setModal(true, e, "danger");
@@ -100,19 +103,19 @@ export class AddLocationView extends React.Component {
         let result = [];
         if (this.state.activities) {
             this.state.activities.forEach((activity) => {
-                result.push(<Checkbox key={activity} onClick={e => this.handleCheckboxChange(activity, e.target.checked)} >{activity}</Checkbox>);
+                result.push(<Checkbox key={activity} checked={this.state.form.activities.includes(activity)} onChange={e => this.handleCheckboxChange(activity, e.target.checked)} >{activity}</Checkbox>);
             });
         }
         return result;
     }
 
-    onLocationSet(location) {
+    onLocationSet(name, location) {
         let form = this.state.form;
-        form.loc.coordinates = [location.longitude, location.latitude];
+        form.loc.coordinates = [location.lng, location.lat];
         this.setState(
             {
                 form: form,
-                locationName: location.name
+                locationName: name
             }
         );
     }
@@ -128,6 +131,22 @@ export class AddLocationView extends React.Component {
         info.body = body;
         info.type = type;
         this.setState({ info: info });
+    }
+
+    resetForm() {
+        this.setState({
+            form: {
+                name: '',
+                openingHours: '',
+                description: '',
+                loc: {
+                    type: 'Point',
+                    coordinates: []
+                },
+                activities: [],
+            },
+            locationName: ''
+        })
     }
 
     render() {
@@ -190,17 +209,14 @@ export class AddLocationView extends React.Component {
                                                 <FormGroup controlId="setLocation">
                                                     <ControlLabel>Location</ControlLabel>
                                                     <InputGroup>
-                                                        <FormControl
-                                                            type="text"
-                                                            value={this.state.locationName}
-                                                            placeholder="Location"
-                                                            disabled={true}>
-                                                        </FormControl>
+                                                        <LocationSearchField locName={this.state.locationName} handleLocationChange={this.onLocationSet}/>
                                                         <InputGroup.Addon><Glyphicon glyph={'map-marker'} /></InputGroup.Addon>
                                                     </InputGroup>
-                                                    <HelpBlock>The location has to be selected via the map.</HelpBlock>
+                                                    <HelpBlock>Type in address of location or select via right click on map.</HelpBlock>
                                                     <br></br>
-                                                    <LocationMap onLocationSet={this.onLocationSet}></LocationMap>
+                                                    <LocationMap marker = {this.state.form.loc.coordinates.length === 2 ?
+                                                        {position : {lng : this.state.form.loc.coordinates[0], lat : this.state.form.loc.coordinates[1]}}
+                                                        : undefined} onLocationSet = {this.onLocationSet} />
                                                 </FormGroup>
                                             </Col>
                                             <Col xs={12} sm={12}>
