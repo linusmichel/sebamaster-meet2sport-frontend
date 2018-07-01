@@ -21,4 +21,14 @@ export default class ActivityService {
         });
     }
 
+    static addActivity(activity) {
+        return new Promise((resolve, reject) => {
+            HttpService.post(`${ActivityService.baseURL()}` + "/activity", activity, function (data) {
+                resolve(data);
+            }, function (textStatus) {
+                reject(textStatus);
+            });
+        });
+    }
+
 }
