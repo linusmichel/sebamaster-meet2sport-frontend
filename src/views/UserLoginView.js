@@ -22,9 +22,9 @@ export class UserLoginView extends React.Component {
         UserService.login(user.username, user.password).then((data) => {
             this.props.history.push("/");
         }).catch((e) => {
-            console.error(e);
+            //Regardless of error, always display generic message. "Do not reveal what went wrong during login"
             this.setState({
-                error: e
+                error: "Username or password was incorrect. Please try again."
             });
         });
     }
