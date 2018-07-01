@@ -8,7 +8,7 @@ Meet2Sport is a platform to arrange sport meetings with like-minded people.
 
 ## Start the application
 
-* Install nodejs and npm (ndoe package manager)
+* Install nodejs and npm (node package manager)
 * Make sure to start the [backend application](https://github.com/markushinz/sebamaster-meet2sport-backend)  first
 * Run following commands
 
