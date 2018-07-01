@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { PageHeader, Grid, Row, Col, Panel, Glyphicon, FormGroup, ControlLabel, FormControl, InputGroup, Button, Checkbox, HelpBlock } from 'react-bootstrap';
+import { PageHeader, Grid, Row, Col, Panel, Glyphicon, FormGroup, ControlLabel, FormControl, InputGroup, Button, HelpBlock } from 'react-bootstrap';
 
 import Page from '../components/Page';
 import EventService from '../services/EventService';
@@ -108,6 +108,7 @@ export class CreateEventView extends React.Component {
     handleStartDateChange(day){
         let form = this.state.form;
         form.start_date = day;
+        form.end_date = day;    // Change end date with start date
         this.setState({form : form});
         // Close date picker without using refs
         document.body.click();
