@@ -40,7 +40,7 @@ export default class EventCardStack extends React.Component {
         for(let i = 0; i<events.length; i++){
             let event = events[i];
             cards.push(<Col xs={12} sm={6} md={4} lg={3}  key={i}>
-                <EventCard event={event} showEventDetails = {this.props.showEventDetails} joinEvent = {this.props.joinEvent}/>
+                <EventCard event={event} showEventDetails = {this.props.showEventDetails} joinEvent = {this.props.joinEvent} leaveEvent = {this.props.leaveEvent}/>
             </Col>);
         }
         return cards;
@@ -49,7 +49,7 @@ export default class EventCardStack extends React.Component {
     render() {
         return <Panel>
             <Panel.Heading>
-                <Panel.Title componentClass="h3"><Glyphicon glyph = {'list'}/> Events</Panel.Title>
+                <Panel.Title componentClass="h3"><Glyphicon glyph = {'list'}/> {this.props.title}</Panel.Title>
             </Panel.Heading>
             <Panel.Body>
                 <Grid fluid={true}>

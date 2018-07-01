@@ -74,6 +74,22 @@ export default class EventService {
         });
     }
 
+    static leaveEvent(event){
+
+        let user = UserService.getCurrentUser();
+        let userID = user.id;
+
+        return new Promise((resolve, reject) => {
+            HttpService.put(`${EventService.baseURL()}` + "/event/leave/" + event._id,
+                {participant : userID},
+                function(data) {
+                    resolve(data);
+                }, function(textStatus) {
+                    reject(textStatus);
+                });
+        });
+    }
+
     static checkParticipation(event){
         let user = UserService.getCurrentUser();
         let userID = user.id;

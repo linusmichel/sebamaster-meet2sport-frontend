@@ -61,10 +61,8 @@ export default class EventDetailsModal extends React.Component {
                     </ListGroup>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle={'primary'} onClick={() => {
-                        this.props.handleClose();
-                        this.props.joinEvent(event);
-                    }}>Join</Button>
+                    {this.props.joinEvent && <Button bsStyle={'primary'} onClick = {() => {this.props.handleClose(); this.props.joinEvent(event);}}>Join</Button>}
+                    {this.props.leaveEvent && <Button bsStyle={'danger'} onClick = {() => {this.props.handleClose(); this.props.leaveEvent(event)}}>Leave</Button>}
                     {' '}
                     <Button onClick={() => {
                         this.props.handleClose();
