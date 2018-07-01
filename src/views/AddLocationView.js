@@ -9,7 +9,7 @@ import LocationMap from '../components/LocationMap';
 import ActivityService from '../services/ActivityService';
 import SportPlaceService from '../services/SportPlaceService';
 import InfoModal from '../components/InfoModal';
-import {LocationSearchField} from "../components/LocationSearchField";
+import { LocationSearchField } from "../components/LocationSearchField";
 
 
 export class AddLocationView extends React.Component {
@@ -28,6 +28,7 @@ export class AddLocationView extends React.Component {
                 activities: [],
             },
             activities: undefined,
+            newActivity: '',
             locationName: '',
             info: {
                 showInfo: false,
@@ -45,6 +46,8 @@ export class AddLocationView extends React.Component {
         this.isEverythingFilled = this.isEverythingFilled.bind(this);
         this.setModal = this.setModal.bind(this);
         this.resetForm = this.resetForm.bind(this);
+        this.handleNewActivityChange = this.handleNewActivityChange.bind(this);
+        this.handleAddActivity = this.handleAddActivity.bind(this);
     }
 
     componentWillMount() {
@@ -106,7 +109,44 @@ export class AddLocationView extends React.Component {
                 result.push(<Checkbox key={activity} checked={this.state.form.activities.includes(activity)} onChange={e => this.handleCheckboxChange(activity, e.target.checked)} >{activity}</Checkbox>);
             });
         }
+        result.push(<Checkbox key={'addActivity'} disabled>
+            <FormGroup controlId="addActivity">
+                <InputGroup>
+                    <FormControl
+                        type="text"
+                        value={this.state.newActivity}
+                        placeholder="Name"
+                        onChange={this.handleNewActivityChange}>
+                    </FormControl>
+                    <InputGroup.Button>
+                        <Button disabled={this.state.newActivity == '' || this.state.activities.includes(this.state.newActivity)} type="submit" bsStyle='default' onClick={this.handleAddActivity}>Add</Button>
+                    </InputGroup.Button>
+                </InputGroup>
+            </FormGroup>
+        </Checkbox>);
         return result;
+    }
+
+    handleAddActivity(e) {
+        ActivityService.addActivity({ name: this.state.newActivity }).then((data) => {
+            console.log(data);
+            let activities = this.state.activities
+            activities.push(this.state.newActivity);
+            this.setState({
+                activities: activities,
+                newActivity: ''
+            });
+        }).catch((e) => {
+            console.log(e);
+            this.setModal(true, "Activity could not be added. Please try again later.", "danger");
+            this.setState({
+                newActivity: ''
+            });
+        });
+    }
+
+    handleNewActivityChange(e) {
+        this.setState({ newActivity: e.target.value });
     }
 
     onLocationSet(name, location) {
@@ -153,7 +193,7 @@ export class AddLocationView extends React.Component {
         return (
             <Page>
                 {this.state.info.showInfo && <InfoModal show={this.state.info.showInfo} info={this.state.info.body}
-                    type={this.state.info.type} handleClose={ () => {this.setModal(false)}} />}
+                    type={this.state.info.type} handleClose={() => { this.setModal(false) }} />}
                 <Grid>
                     <Row>
                         <Col xs={12} sm={12}><PageHeader style={{ marginTop: '10px', }}>
@@ -209,14 +249,14 @@ export class AddLocationView extends React.Component {
                                                 <FormGroup controlId="setLocation">
                                                     <ControlLabel>Location</ControlLabel>
                                                     <InputGroup>
-                                                        <LocationSearchField locName={this.state.locationName} handleLocationChange={this.onLocationSet}/>
+                                                        <LocationSearchField locName={this.state.locationName} handleLocationChange={this.onLocationSet} />
                                                         <InputGroup.Addon><Glyphicon glyph={'map-marker'} /></InputGroup.Addon>
                                                     </InputGroup>
                                                     <HelpBlock>Type in address of location or select via right click on map.</HelpBlock>
                                                     <br></br>
-                                                    <LocationMap marker = {this.state.form.loc.coordinates.length === 2 ?
-                                                        {position : {lng : this.state.form.loc.coordinates[0], lat : this.state.form.loc.coordinates[1]}}
-                                                        : undefined} onLocationSet = {this.onLocationSet} />
+                                                    <LocationMap marker={this.state.form.loc.coordinates.length === 2 ?
+                                                        { position: { lng: this.state.form.loc.coordinates[0], lat: this.state.form.loc.coordinates[1] } }
+                                                        : undefined} onLocationSet={this.onLocationSet} />
                                                 </FormGroup>
                                             </Col>
                                             <Col xs={12} sm={12}>
