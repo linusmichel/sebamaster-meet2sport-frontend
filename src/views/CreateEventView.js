@@ -354,7 +354,7 @@ export class CreateEventView extends React.Component {
         if(this.state.activities){
             this.state.activities.forEach((activity) => {
                 if(activity == "Select Location first") {
-                    result.push(<option value="" selected disabled hidden>{activity}</option>);
+                    result.push(<option value="" key={0} disabled hidden>{activity}</option>);
                 } else {
                     result.push(<option value={activity} key={activity}>{activity}</option>);
                 }
